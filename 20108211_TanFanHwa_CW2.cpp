@@ -18,13 +18,15 @@ struct Information{
     string edu_level;
     string program;
     string grade;
+    string year_completion;
 };
 
 // Struct to generate the block
 struct Block {
     int block_num;
-    string curr_block_hash;
     string prev_block_hash;
+    string curr_block_hash;
+    string next_block_hash;
     string timestamp;
     struct Information info;
 };
@@ -38,18 +40,21 @@ Block blockArr[MAX];
 void printMenu();
 Block createNewBlock(int *block_count);
 string generate_random_hash();
-void printBlock(int *block_count);
+void printBlock(int i);
+void printAllBlock(int *block_count);
 string generateInfoString(int i);
 void editBlock(int *block_count);
+string getCurrentTime();
+void deleteBlock(int *block_count);
 
 
 // Main program
 int main(){
     //Declare variable used Main
     int menu;
-    bool end=true;
-    char check_end = 'y';
-    int block_count=0;
+    bool end=true, addBlock;
+    char check_end = 'y', check_add = 'y';
+    int block_count = 0;
 
     srand(20108211);
     system("cls");
@@ -68,17 +73,43 @@ int main(){
         // If the user input is '3' the program will ask th user which block top edit
         // If the user input is '4' the program will quit
         if(menu==1){
+            addBlock = true;
+            while(addBlock) {
+                //Creating new block
+                blockArr[block_count]=createNewBlock(&block_count);
+                block_count++;
+                system("cls");
+                
+                cout<<"Do you want to continue to add block?  (ENTER 'y' to continue add new block, ENTER others keys return to menu)"<<endl;
+                cin>>check_add;
 
-            //Creating new block
-            blockArr[block_count]=createNewBlock(&block_count);
-            block_count++;
+                if(check_add == 'y' || check_add == 'Y') {
+                    addBlock = true;
+                }
+                else addBlock = false;
+                
+                system("cls");
+
+            }
+
+        }
+        else if (menu==2){
+
+            editBlock(&block_count);
+
             system("cls");
 
         }
-        else if(menu==2) {
+        else if (menu==3) {
+
+            //deleteBlock(&block_count);
+
+            system("cls");
+        }
+        else if(menu==4) {
 
             //Print out all the blocks
-            printBlock(&block_count);
+            printAllBlock(&block_count);
 
             //Ask user whether want to continue or quit the program
             cout<<"\n\nDo you want to continue? (ENTER 'y' to back to menu, ENTER others keys to quit program)\n";
@@ -90,15 +121,7 @@ int main(){
         
             system("cls");
         }
-        else if (menu==3){
-
-
-            editBlock(&block_count);
-
-            system("cls");
-
-        }
-        else if(menu==4){
+        else if(menu==5){
             end=false;
         }
         else {
@@ -116,10 +139,11 @@ int main(){
 
 // Void function to print out the menu
 void printMenu(){
-    cout<<"1.Enter new block"<<endl;
-    cout<<"2.Print out all blocks"<<endl;
-    cout<<"3.Edit block"<<endl;
-    cout<<"4.Quit program"<<endl;
+    cout<<"1.Add new block"<<endl;
+    cout<<"2.Edit Block"<<endl;
+    cout<<"3.Delete Block"<<endl;
+    cout<<"4.Print out all blocks"<<endl;
+    cout<<"5.Quit program"<<endl;
     cout<<"Please choose your option: ";
 }
 
@@ -128,7 +152,9 @@ Block createNewBlock(int *block_count) {
     Block newBlock;
     Information newInformation;
     string newHash; 
+    bool checkValid;
     
+
     cout<<"Enter new Block\n\n";
 
     //Get input from the user
@@ -149,18 +175,20 @@ Block createNewBlock(int *block_count) {
     getline(cin, newInformation.grade);
     
     cout<<"Date of completion (2020-08-04): \n";
-    getline(cin, newBlock.timestamp);
+    getline(cin, newInformation.year_completion);
 
     system("cls");
 
     
-    newBlock.block_num = *block_count;
-    
     //Generate a new hash and store in the hashArr for the use to track the sequence of the blocks
     hashArr[*block_count] = generate_random_hash();
-
-
+    
+    newBlock.block_num = blockArr[*block_count-1].block_num + 1;
+    
     newBlock.curr_block_hash = hashArr[*block_count];
+
+    //Update next block hash on previous block
+    blockArr[*block_count-1].next_block_hash = newBlock.curr_block_hash;
     
     //If the current block id the first block the previous hash will be the current hash
     newBlock.prev_block_hash = blockArr[*block_count-1].curr_block_hash;
@@ -168,8 +196,14 @@ Block createNewBlock(int *block_count) {
         newBlock.prev_block_hash=newBlock.curr_block_hash;
     }
 
+    newBlock.next_block_hash = newBlock.curr_block_hash;
+
+    newBlock.timestamp = getCurrentTime();
 
     newBlock.info = newInformation;
+
+    
+    
     
     return newBlock;
 }
@@ -196,9 +230,20 @@ string generate_random_hash() {
 
     return newHash;
 }
+void printBlock(int i) {
+
+    cout<<"Block "<<blockArr[i].block_num<<" \t|";
+    cout<<blockArr[i].prev_block_hash<<" \t|";
+    cout<<blockArr[i].curr_block_hash<<" \t|";
+    cout<<blockArr[i].next_block_hash<<" \t|";
+    cout<<"Timestamp: "<<blockArr[i].timestamp<<" \t|";
+    cout<< generateInfoString(i) <<" \t|"<<endl;
+
+}
+
 
 //Funtion to print oot all the blocks
-void printBlock(int *block_count){
+void printAllBlock(int *block_count){
     
 
     //The program will print out the block by referring the sequence of the hash in HashArr
@@ -208,11 +253,13 @@ void printBlock(int *block_count){
         // and print out the block 
         for(int j=0; j<*block_count; j++){
             if(blockArr[j].curr_block_hash==hashArr[i]){
-                cout<<"Block "<<blockArr[j].block_num<<" \t|";
-                cout<<blockArr[j].curr_block_hash<<" \t|";
+                /*cout<<"Block "<<blockArr[j].block_num<<" \t|";
                 cout<<blockArr[j].prev_block_hash<<" \t|";
+                cout<<blockArr[j].curr_block_hash<<" \t|";
+                cout<<blockArr[j].next_block_hash<<" \t|";
                 cout<<"Timestamp: "<<blockArr[j].timestamp<<" \t|";
-                cout<< generateInfoString(j) <<" \t|"<<endl;
+                cout<< generateInfoString(j) <<" \t|"<<endl;*/
+                printBlock(j);
             }
         }
     }
@@ -224,7 +271,8 @@ string generateInfoString(int i) {
     
     string infoString;
     Information tempInfo = blockArr[i].info;
-    infoString = tempInfo.name + ", " + tempInfo.id + ", " + tempInfo.edu_level + ", Major: " + tempInfo.program + ", Grade/CGPA:" + tempInfo.grade;
+    infoString = tempInfo.name + ", " + tempInfo.id + ", " + tempInfo.edu_level + ", Major: " + tempInfo.program + ", Grade/CGPA: " + tempInfo.grade + 
+                    ", Year of Completion: " + tempInfo.year_completion;
     
     return infoString;
 }
@@ -239,15 +287,15 @@ void editBlock(int *block_count){
     while(checkValid) {
 
         //Print out all blocks
-        printBlock(&y); 
+        printAllBlock(&y); 
 
         //Let user choose which block to edit
-        cout<<"\nWhich block do you want to edit? (0,1,2,3...)\n";
+        cout<<"\nWhich block do you want to edit? (1,2,3...)\n";
         cin>>x;
 
         //Check whether the block choose is exist or not.
-        if(x>(y-1)) {
-            checkValid=true;
+        if(x>(y)) {
+            checkValid = true;
             system("cls");
             cout<<"Invalid input Plase choose again !!!"<<endl;
         }
@@ -256,6 +304,7 @@ void editBlock(int *block_count){
             system("cls");
 
             cout<<"Edit block "<<x<<"\n\n";
+            printBlock(x-1);
 
             //Get input from the user
             cout<<"Please Enter Your Name: \n";
@@ -275,13 +324,29 @@ void editBlock(int *block_count){
             getline(cin, tempInfomation.grade);
     
             cout<<"Date of completion (2020-08-04): \n";
-            getline(cin, blockArr[x].timestamp);
+            getline(cin, tempInfomation.year_completion);
 
-            blockArr[x].info = tempInfomation;
+            blockArr[x-1].info = tempInfomation;
+
+            blockArr[x-1].timestamp = getCurrentTime();
 
             checkValid = false;
         }  
 
     }  
 
+}
+
+string getCurrentTime() {
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y %H:%M:%S",timeinfo);
+    std::string str(buffer);
+
+    return str;
 }
