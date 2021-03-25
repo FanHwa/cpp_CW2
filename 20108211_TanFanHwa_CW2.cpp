@@ -40,9 +40,9 @@ Block blockArr[MAX];
 void printMenu();
 Block createNewBlock(int *block_count);
 string generate_random_hash();
-void printBlock(int i);
+void printBlock(Block block);
 void printAllBlock(int *block_count);
-string generateInfoString(int i);
+string generateInfoString(Information info);
 void editBlock(int *block_count);
 string getCurrentTime();
 void deleteBlock(int *block_count);
@@ -152,58 +152,71 @@ Block createNewBlock(int *block_count) {
     Block newBlock;
     Information newInformation;
     string newHash; 
-    bool checkValid;
-    
+    bool checkValid=true;
+    char tempChar ='y';
 
-    cout<<"Enter new Block\n\n";
-
-    //Get input from the user
-    cout<<"Please Enter Your Name: \n";
-    cin.ignore();
-    getline(cin, newInformation.name);
-
-    cout<<"Please Enter Your ID: \n";;
-    getline(cin, newInformation.id);
-    
-    cout<<"Please Enter the edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
-    getline(cin, newInformation.edu_level);
-
-    cout<<"Please Enter Your Major (e.g. Sciene, BSC Computer Science...): \n";
-    getline(cin, newInformation.program);
-
-    cout<<"Please Enter Your Grade (e.g. 89% / 3.80 for CGPA): \n";
-    getline(cin, newInformation.grade);
-    
-    cout<<"Date of completion (2020-08-04): \n";
-    getline(cin, newInformation.year_completion);
-
-    system("cls");
-
-    
     //Generate a new hash and store in the hashArr for the use to track the sequence of the blocks
     hashArr[*block_count] = generate_random_hash();
     
-    newBlock.block_num = blockArr[*block_count-1].block_num + 1;
-    
-    newBlock.curr_block_hash = hashArr[*block_count];
+    while(checkValid){
+        cout<<"Enter new Block\n\n";
 
-    //Update next block hash on previous block
-    blockArr[*block_count-1].next_block_hash = newBlock.curr_block_hash;
+        //Get input from the user
+        cout<<"Please Enter Your Name: \n";
+        cin.ignore();
+        getline(cin, newInformation.name);
+
+        cout<<"Please Enter Your ID: \n";;
+        getline(cin, newInformation.id);
     
-    //If the current block id the first block the previous hash will be the current hash
-    newBlock.prev_block_hash = blockArr[*block_count-1].curr_block_hash;
-    if(*block_count==0) {
-        newBlock.prev_block_hash=newBlock.curr_block_hash;
+        cout<<"Please Enter the edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
+        getline(cin, newInformation.edu_level);
+
+        cout<<"Please Enter Your Major (e.g. Sciene, BSC Computer Science...): \n";
+        getline(cin, newInformation.program);
+
+        cout<<"Please Enter Your Grade (e.g. 89% / 3.80 for CGPA): \n";
+        getline(cin, newInformation.grade);
+    
+        cout<<"Date of completion (2020-08-04): \n";
+        getline(cin, newInformation.year_completion);
+
+        system("cls");
+
+    
+        newBlock.block_num = blockArr[*block_count-1].block_num + 1;
+    
+        newBlock.curr_block_hash = hashArr[*block_count];
+
+        //Update next block hash on previous block
+        blockArr[*block_count-1].next_block_hash = newBlock.curr_block_hash;
+    
+        //If the current block id the first block the previous hash will be the current hash
+        newBlock.prev_block_hash = blockArr[*block_count-1].curr_block_hash;
+        if(*block_count==0) {
+            newBlock.prev_block_hash=newBlock.curr_block_hash;
+        }
+
+        newBlock.next_block_hash = newBlock.curr_block_hash;
+
+        newBlock.timestamp = getCurrentTime();
+
+        newBlock.info = newInformation;
+
+
+        system("cls");
+
+        printBlock(newBlock);
+        cout<<"\nAre the information enter correct? (ENTER 'y' if correct, ENTER other keys to re-enter information)\n";
+        cin>>tempChar;
+
+        if(tempChar == 'y' || tempChar == 'Y') {
+            checkValid = false;
+        }
+        else checkValid = true;
+        system("cls");
+
     }
-
-    newBlock.next_block_hash = newBlock.curr_block_hash;
-
-    newBlock.timestamp = getCurrentTime();
-
-    newBlock.info = newInformation;
-
-    
-    
     
     return newBlock;
 }
@@ -230,14 +243,16 @@ string generate_random_hash() {
 
     return newHash;
 }
-void printBlock(int i) {
 
-    cout<<"Block "<<blockArr[i].block_num<<" \t|";
-    cout<<blockArr[i].prev_block_hash<<" \t|";
-    cout<<blockArr[i].curr_block_hash<<" \t|";
-    cout<<blockArr[i].next_block_hash<<" \t|";
-    cout<<"Timestamp: "<<blockArr[i].timestamp<<" \t|";
-    cout<< generateInfoString(i) <<" \t|"<<endl;
+
+void printBlock(Block block) {
+
+    cout<<"Block "<<block.block_num<<" \t|";
+    cout<<block.prev_block_hash<<" \t|";
+    cout<<block.curr_block_hash<<" \t|";
+    cout<<block.next_block_hash<<" \t|";
+    cout<<"Timestamp: "<<block.timestamp<<" \t|";
+    cout<< generateInfoString(block.info) <<" \t|"<<endl;
 
 }
 
@@ -253,24 +268,18 @@ void printAllBlock(int *block_count){
         // and print out the block 
         for(int j=0; j<*block_count; j++){
             if(blockArr[j].curr_block_hash==hashArr[i]){
-                /*cout<<"Block "<<blockArr[j].block_num<<" \t|";
-                cout<<blockArr[j].prev_block_hash<<" \t|";
-                cout<<blockArr[j].curr_block_hash<<" \t|";
-                cout<<blockArr[j].next_block_hash<<" \t|";
-                cout<<"Timestamp: "<<blockArr[j].timestamp<<" \t|";
-                cout<< generateInfoString(j) <<" \t|"<<endl;*/
-                printBlock(j);
+                printBlock(blockArr[j]);
             }
         }
     }
     
 }
 
-//Function to generate information of the user into string
-string generateInfoString(int i) {
+
+
+string generateInfoString(Information tempInfo) {
     
     string infoString;
-    Information tempInfo = blockArr[i].info;
     infoString = tempInfo.name + ", " + tempInfo.id + ", " + tempInfo.edu_level + ", Major: " + tempInfo.program + ", Grade/CGPA: " + tempInfo.grade + 
                     ", Year of Completion: " + tempInfo.year_completion;
     
@@ -279,8 +288,8 @@ string generateInfoString(int i) {
 
 //Funtion to edit existing Block
 void editBlock(int *block_count){
-    int x, y=*block_count;
-    bool checkValid = true;
+    int option, x, y=*block_count;
+    bool checkValid = true, checkEdit=true;
     Block tempBlock;
     Information tempInfomation;
     
@@ -303,13 +312,44 @@ void editBlock(int *block_count){
         else{
             system("cls");
 
-            cout<<"Edit block "<<x<<"\n\n";
-            printBlock(x-1);
+            tempInfomation = blockArr[x-1].info;
+            while(checkEdit) {
+                cout<<"Edit Block "<<x<<"\n\n";
+                cout<<"1."<<tempInfomation.name<<endl;
+                cout<<"2."<<tempInfomation.id<<endl;
+                cout<<"3."<<tempInfomation.edu_level<<endl;
+                cout<<"4."<<tempInfomation.program<<endl;
+                cout<<"5."<<tempInfomation.grade<<endl;
+                cout<<"6."<<tempInfomation.year_completion<<endl;
 
-            //Get input from the user
-            cout<<"Please Enter Your Name: \n";
-            cin.ignore();
-            getline(cin, tempInfomation.name);
+                cout<<"Which data do you want to edit?\n";
+                cin>>option;
+
+                switch(option) {
+                    case 1:
+                        cout<<"Please Enter Your Name: \n";
+                        cin.ignore();
+                        getline(cin, tempInfomation.name);
+                        break;
+                    case 2:
+                        cout<<"Please Enter Your ID: \n";
+                        getline(cin, tempInfomation.id);
+                        checkEdit = false;
+                        break;
+                    default:
+                        system("cls");
+                        cout<<"Invalid input Please choose again !!!"<<endl;
+                        break;
+                }
+
+                cout<<"Do you want to edit others data?\n";
+            }
+            /*if(option>6) {
+                system("cls");
+                cout<<"Invalid input Plase choose again !!!"<<endl;
+            }
+            else {
+            
 
             cout<<"Please Enter Your ID: \n";;
             getline(cin, tempInfomation.id);
@@ -324,13 +364,14 @@ void editBlock(int *block_count){
             getline(cin, tempInfomation.grade);
     
             cout<<"Date of completion (2020-08-04): \n";
-            getline(cin, tempInfomation.year_completion);
+            getline(cin, tempInfomation.year_completion);*/
 
             blockArr[x-1].info = tempInfomation;
 
             blockArr[x-1].timestamp = getCurrentTime();
 
             checkValid = false;
+            
         }  
 
     }  
