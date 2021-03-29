@@ -102,7 +102,8 @@ int main(){
         }
         else if (menu==3) {
 
-            //deleteBlock(&block_count);
+            deleteBlock(&block_count);
+            block_count = block_count -1 ;
 
             system("cls");
         }
@@ -226,6 +227,7 @@ string generate_random_hash() {
     int tempNum;
     char tempChar;
     string newHash;
+
     
     //The first two and last two of the hash string will be alphabet, others will be number
     for(int i=0; i<8; i++) {
@@ -244,7 +246,6 @@ string generate_random_hash() {
     return newHash;
 }
 
-
 void printBlock(Block block) {
 
     cout<<"Block "<<block.block_num<<" \t|";
@@ -256,32 +257,37 @@ void printBlock(Block block) {
 
 }
 
-
 //Funtion to print oot all the blocks
 void printAllBlock(int *block_count){
-    
-
+    cout<<*block_count<<endl;
+    string nextHash = blockArr[0].curr_block_hash;
+    string currHash = blockArr[0].curr_block_hash;
+    int count=0;
     //The program will print out the block by referring the sequence of the hash in HashArr
+
     for(int i=0; i<*block_count; i++) {
         
-        //The program will check the entire Block Array to get the Hash String that match with the current hash in the block
-        // and print out the block 
-        for(int j=0; j<*block_count; j++){
-            if(blockArr[j].curr_block_hash==hashArr[i]){
+        for(int j=0; j<*block_count; j++) {
+            if(blockArr[j].curr_block_hash == nextHash && blockArr[j].prev_block_hash == currHash) {
+                nextHash = blockArr[j].next_block_hash;
+                currHash = blockArr[j].curr_block_hash;
                 printBlock(blockArr[j]);
+                count++;
             }
+            
+        }
+        if(count == *block_count) {
+                break;
         }
     }
     
 }
 
-
-
 string generateInfoString(Information tempInfo) {
     
     string infoString;
     infoString = tempInfo.name + ", " + tempInfo.id + ", " + tempInfo.edu_level + ", Major: " + tempInfo.program + ", Grade/CGPA: " + tempInfo.grade + 
-                    ", Year of Completion: " + tempInfo.year_completion;
+                    ", Completion Date: " + tempInfo.year_completion;
     
     return infoString;
 }
@@ -290,6 +296,7 @@ string generateInfoString(Information tempInfo) {
 void editBlock(int *block_count){
     int option, x, y=*block_count;
     bool checkValid = true, checkEdit=true;
+    char tempChar = 'y';
     Block tempBlock;
     Information tempInfomation;
     
@@ -303,7 +310,7 @@ void editBlock(int *block_count){
         cin>>x;
 
         //Check whether the block choose is exist or not.
-        if(x>(y)) {
+        if(x>y || x<=0) {
             checkValid = true;
             system("cls");
             cout<<"Invalid input Plase choose again !!!"<<endl;
@@ -311,29 +318,55 @@ void editBlock(int *block_count){
         //Input new data to the chosen block
         else{
             system("cls");
-
+            checkEdit = true;
             tempInfomation = blockArr[x-1].info;
             while(checkEdit) {
                 cout<<"Edit Block "<<x<<"\n\n";
-                cout<<"1."<<tempInfomation.name<<endl;
-                cout<<"2."<<tempInfomation.id<<endl;
-                cout<<"3."<<tempInfomation.edu_level<<endl;
-                cout<<"4."<<tempInfomation.program<<endl;
-                cout<<"5."<<tempInfomation.grade<<endl;
-                cout<<"6."<<tempInfomation.year_completion<<endl;
+                cout<<"1. Name: "<<tempInfomation.name<<endl;
+                cout<<"2. Studenty ID: "<<tempInfomation.id<<endl;
+                cout<<"3. Edu Level: "<<tempInfomation.edu_level<<endl;
+                cout<<"4. Program: "<<tempInfomation.program<<endl;
+                cout<<"5. Grade: "<<tempInfomation.grade<<endl;
+                cout<<"6. Date of completion: "<<tempInfomation.year_completion<<endl;
 
-                cout<<"Which data do you want to edit?\n";
+                cout<<"\nWhich data do you want to edit?\n";
                 cin>>option;
 
                 switch(option) {
                     case 1:
-                        cout<<"Please Enter Your Name: \n";
+                        cout<<"\nPlease Enter New Name: \n";
                         cin.ignore();
                         getline(cin, tempInfomation.name);
+                        checkEdit = false;
                         break;
                     case 2:
-                        cout<<"Please Enter Your ID: \n";
+                        cout<<"Please Enter New ID: \n";
+                        cin.ignore();
                         getline(cin, tempInfomation.id);
+                        checkEdit = false;
+                        break;
+                    case 3:
+                        cout<<"Please Enter new edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
+                        cin.ignore();
+                        getline(cin, tempInfomation.edu_level);
+                        checkEdit = false;
+                        break;
+                    case 4:
+                        cout<<"Please Enter new Major (e.g. Sciene, BSC Computer Science...): \n";
+                        cin.ignore();
+                        getline(cin, tempInfomation.program);
+                        checkEdit = false;
+                        break;
+                    case 5:
+                        cout<<"Please Enter new Grade (e.g. 89% / 3.80 for CGPA): \n";
+                        cin.ignore();
+                        getline(cin, tempInfomation.grade);
+                        checkEdit = false;
+                        break;
+                    case 6:
+                        cout<<"New Date of completion (2020-08-04): \n";
+                        cin.ignore();
+                        getline(cin, tempInfomation.year_completion);
                         checkEdit = false;
                         break;
                     default:
@@ -341,38 +374,31 @@ void editBlock(int *block_count){
                         cout<<"Invalid input Please choose again !!!"<<endl;
                         break;
                 }
-
-                cout<<"Do you want to edit others data?\n";
+                
+                
+                    
             }
-            /*if(option>6) {
-                system("cls");
-                cout<<"Invalid input Plase choose again !!!"<<endl;
-            }
-            else {
             
-
-            cout<<"Please Enter Your ID: \n";;
-            getline(cin, tempInfomation.id);
-    
-            cout<<"Please Enter the edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
-            getline(cin, tempInfomation.edu_level);
-
-            cout<<"Please Enter Your Major (e.g. Sciene, BSC Computer Science...): \n";
-            getline(cin, tempInfomation.program);
-
-            cout<<"Please Enter Your Grade (e.g. 89% / 3.80 for CGPA): \n";
-            getline(cin, tempInfomation.grade);
-    
-            cout<<"Date of completion (2020-08-04): \n";
-            getline(cin, tempInfomation.year_completion);*/
-
             blockArr[x-1].info = tempInfomation;
 
             blockArr[x-1].timestamp = getCurrentTime();
 
-            checkValid = false;
+            system("cls");
+                cout<<"Block edited successfully !!"<<endl;
+                cout<<"Do you want to edit others data? (Enter 'y' to continue edit, Enter others key to retrun main menu)"<<endl;
+                cin>>tempChar;
+
+                if(tempChar == 'y' || tempChar == 'Y') {
+                    checkValid = true;
+                } 
+                else {
+                    checkValid = false;
+                }
+                system("cls");
             
-        }  
+            
+        } 
+
 
     }  
 
@@ -390,4 +416,31 @@ string getCurrentTime() {
     std::string str(buffer);
 
     return str;
+}
+
+void deleteBlock(int *block_count) {
+    int x , y=*block_count;
+    bool checkValid=true;
+    char tempChar='y';
+
+    while(checkValid) {
+
+        printAllBlock(&y);
+
+        cout<<"\nWhich block do you want to delete?"<<endl;
+        cin>>x;
+
+        if( x>y || x<=0) {
+            checkValid = true;
+            system("cls");
+            cout<<"Invalid input Plase choose again !!!"<<endl;
+        }
+        else {
+                blockArr[x-2].next_block_hash = blockArr[x-1].next_block_hash;
+                blockArr[x].prev_block_hash = blockArr[x-1].prev_block_hash;
+                for(int i=x-1; i<y; i++) {
+                    blockArr[i] = blockArr[i+1];
+                }
+        }
+    }
 }
