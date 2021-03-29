@@ -46,6 +46,7 @@ string generateInfoString(Information info);
 void editBlock(int *block_count);
 string getCurrentTime();
 void deleteBlock(int *block_count);
+int checkPosition(int x, int y);
 
 
 // Main program
@@ -53,7 +54,7 @@ int main(){
     //Declare variable used Main
     int menu;
     bool end=true, addBlock;
-    char check_end = 'y', check_add = 'y';
+    char check_end = 'y', check_add = 'y', tempChar;
     int block_count = 0;
 
     srand(20108211);
@@ -103,7 +104,14 @@ int main(){
         else if (menu==3) {
 
             deleteBlock(&block_count);
-            block_count = block_count -1 ;
+            block_count -- ;
+            system("cls");
+            
+            cout<<"Block Deleted Succesfully"<<endl;
+            printAllBlock(&block_count);
+
+            cout<<"\n\nEnter Any Key to return to Main Menu"<<endl;
+            cin>>tempChar;
 
             system("cls");
         }
@@ -294,7 +302,7 @@ string generateInfoString(Information tempInfo) {
 
 //Funtion to edit existing Block
 void editBlock(int *block_count){
-    int option, x, y=*block_count;
+    int option, x, y=*block_count, pos=0;
     bool checkValid = true, checkEdit=true;
     char tempChar = 'y';
     Block tempBlock;
@@ -309,8 +317,11 @@ void editBlock(int *block_count){
         cout<<"\nWhich block do you want to edit? (1,2,3...)\n";
         cin>>x;
 
+        //get the position of the block in Array
+        pos = checkPosition(x, y);
+
         //Check whether the block choose is exist or not.
-        if(x>y || x<=0) {
+        if(pos == -1) {
             checkValid = true;
             system("cls");
             cout<<"Invalid input Plase choose again !!!"<<endl;
@@ -319,7 +330,7 @@ void editBlock(int *block_count){
         else{
             system("cls");
             checkEdit = true;
-            tempInfomation = blockArr[x-1].info;
+            tempInfomation = blockArr[pos].info;
             while(checkEdit) {
                 cout<<"Edit Block "<<x<<"\n\n";
                 cout<<"1. Name: "<<tempInfomation.name<<endl;
@@ -379,9 +390,9 @@ void editBlock(int *block_count){
                     
             }
             
-            blockArr[x-1].info = tempInfomation;
+            blockArr[pos].info = tempInfomation;
 
-            blockArr[x-1].timestamp = getCurrentTime();
+            blockArr[pos].timestamp = getCurrentTime();
 
             system("cls");
                 cout<<"Block edited successfully !!"<<endl;
@@ -419,7 +430,7 @@ string getCurrentTime() {
 }
 
 void deleteBlock(int *block_count) {
-    int x , y=*block_count;
+    int x , y=*block_count, pos;
     bool checkValid=true;
     char tempChar='y';
 
@@ -430,17 +441,54 @@ void deleteBlock(int *block_count) {
         cout<<"\nWhich block do you want to delete?"<<endl;
         cin>>x;
 
-        if( x>y || x<=0) {
+        pos = checkPosition(x,y);
+
+        if( pos == -1) {
             checkValid = true;
             system("cls");
-            cout<<"Invalid input Plase choose again !!!"<<endl;
+            cout<<"Invalid input Please choose again !!!"<<endl;
+        }
+        else if(pos == 0)
+        {
+            blockArr[1].prev_block_hash = blockArr[1].curr_block_hash;
+            for(int i=0; i<y; i++) {
+                blockArr[i] = blockArr[i+1];
+            }
+            checkValid = false;
+        }
+        else if (pos == y-1){
+            blockArr[pos-1].next_block_hash = blockArr[pos-1].curr_block_hash;
+            checkValid = false;
         }
         else {
-                blockArr[x-2].next_block_hash = blockArr[x-1].next_block_hash;
-                blockArr[x].prev_block_hash = blockArr[x-1].prev_block_hash;
-                for(int i=x-1; i<y; i++) {
+                blockArr[pos-1].next_block_hash = blockArr[pos].next_block_hash;
+                blockArr[pos+1].prev_block_hash = blockArr[pos].prev_block_hash;
+                for(int i=pos; i<y; i++) {
                     blockArr[i] = blockArr[i+1];
                 }
+
+                checkValid = false;
         }
+    }
+}
+
+int checkPosition(int x, int y) {
+    int pos=0, check=0;
+    char tempChar;
+
+    for(int i=0; i<y; i++) {
+        if(blockArr[i].block_num == x) {
+            check = 1;
+            pos = i;
+            break;
+        }
+    }
+
+
+    if (check == 1) {
+        return pos;
+    }
+    else {
+        return -1;
     }
 }
