@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <sstream>
+#include <fstream>
+#include <vector>
 
 //Name: Tan Fan Hwa
 //ID: 20108211
@@ -47,6 +50,8 @@ void editBlock(int *block_count);
 string getCurrentTime();
 void deleteBlock(int *block_count);
 int checkPosition(int x, int y);
+void saveFile(Block block[], int *block_count);
+void loadData(int *x);
 
 
 // Main program
@@ -57,8 +62,10 @@ int main(){
     char check_end = 'y', check_add = 'y', tempChar;
     int block_count = 0;
 
-    srand(20108211);
+    srand(time(NULL));
     system("cls");
+
+    loadData(&block_count);
 
     // Main Code for the program
     while (end) {
@@ -79,6 +86,8 @@ int main(){
                 //Creating new block
                 blockArr[block_count]=createNewBlock(&block_count);
                 block_count++;
+
+                saveFile(blockArr, &block_count);
                 system("cls");
                 
                 cout<<"Do you want to continue to add block?  (ENTER 'y' to continue add new block, ENTER others keys return to menu)"<<endl;
@@ -98,6 +107,8 @@ int main(){
 
             editBlock(&block_count);
 
+            saveFile(blockArr, &block_count);
+
             system("cls");
 
         }
@@ -105,6 +116,9 @@ int main(){
 
             deleteBlock(&block_count);
             block_count -- ;
+
+            saveFile(blockArr, &block_count);
+
             system("cls");
             
             cout<<"Block Deleted Succesfully"<<endl;
@@ -137,6 +151,8 @@ int main(){
             //Notify user that the input is invalid
             cout<<"Invalid Input !!! Please Choose again\n";
         }
+
+
 
     }
 
@@ -287,6 +303,7 @@ void printAllBlock(int *block_count){
         if(count == *block_count) {
                 break;
         }
+        //printBlock(blockArr[i]);
     }
     
 }
@@ -490,5 +507,81 @@ int checkPosition(int x, int y) {
     }
     else {
         return -1;
+    }
+}
+
+void saveFile(Block block[], int *block_count) {
+    Information tempInfo;
+    ofstream myfile ("20108211_TanFanHwa_CW2.txt");
+    
+    if(myfile.is_open()) {
+        myfile<<*block_count<<endl;
+
+        for(int i=0; i<*block_count; i++) {
+            myfile<<blockArr[i].block_num<<"|";
+            myfile<<blockArr[i].prev_block_hash<<"|";
+            myfile<<blockArr[i].curr_block_hash<<"|";
+            myfile<<blockArr[i].next_block_hash<<"|";
+            myfile<<blockArr[i].timestamp<<"|";
+            tempInfo = blockArr[i].info;
+            myfile<<tempInfo.name<<"|";
+            myfile<<tempInfo.id<<"|";
+            myfile<<tempInfo.edu_level<<"|";
+            myfile<<tempInfo.program<<"|";
+            myfile<<tempInfo.grade<<"|";
+            myfile<<tempInfo.year_completion<<"\n";
+        }
+    }
+    else {
+        cout<<"Unable to open file\n";
+    }
+
+    myfile.close();
+
+}
+
+void loadData(int *x) {
+    
+    int tempBlockCount, tempBlockNum;
+    ifstream myfile;
+    myfile.open("20108211_TanFanHwa_CW2.txt");
+    
+    if(myfile) {
+        string tempString;
+        getline(myfile, tempString, '\n');
+        *x = stoi(tempString);
+        int i=0;
+
+        while(!myfile.eof()) {
+            Block tempBlock;
+            Information tempInfo;
+            string tempNum;
+
+            getline(myfile, tempNum, '|');
+            try {
+                tempBlock.block_num = stoi(tempNum);
+            } catch(exception &e) {
+                break;
+            }
+
+            getline(myfile, tempBlock.prev_block_hash, '|');
+            getline(myfile, tempBlock.curr_block_hash, '|');
+            getline(myfile, tempBlock.next_block_hash, '|');
+            getline(myfile, tempBlock.timestamp, '|');
+            getline(myfile, tempInfo.name, '|');
+            getline(myfile, tempInfo.id, '|');
+            getline(myfile, tempInfo.edu_level, '|');
+            getline(myfile, tempInfo.program, '|');
+            getline(myfile, tempInfo.grade, '|');
+            getline(myfile, tempInfo.year_completion, '\n');
+
+            tempBlock.info = tempInfo;
+
+            blockArr[i] =  tempBlock;
+            i++;
+        }
+    }
+    else {
+        cout<<"Unable to open file\n";
     }
 }
