@@ -36,7 +36,6 @@ struct Block {
 
 // Declare Global variable used in the program
 const int MAX = 50;
-string hashArr[MAX];
 Block blockArr[MAX];
 
 // Declare functions that used in the program
@@ -65,6 +64,7 @@ int main(){
     srand(time(NULL));
     system("cls");
 
+    //Load data from txt file when program start
     loadData(&block_count);
 
     // Main Code for the program
@@ -77,22 +77,29 @@ int main(){
         system("cls");
 
         // If the user input is '1' the program will create a new block for the user to input information
-        // If the user input is '2' the program will print out all the blocks
-        // If the user input is '3' the program will ask th user which block top edit
-        // If the user input is '4' the program will quit
+        // If the user input is '2' the program will ask the user which block top edit
+        // If the user input is '3' the program will ask the user which block top delete
+        // If the user input is '4' the program will print out all the blocks
+        // If the user input is '5' the program will quit
         if(menu==1){
             addBlock = true;
+
+            //Loop to add new block
             while(addBlock) {
                 //Creating new block
                 blockArr[block_count]=createNewBlock(&block_count);
                 block_count++;
 
+                //Save BlockArr and Block Count into txt file
                 saveFile(blockArr, &block_count);
                 system("cls");
                 
+                //Ask user want to continue to add new block or not
                 cout<<"Do you want to continue to add block?  (ENTER 'y' to continue add new block, ENTER others keys return to menu)"<<endl;
                 cin>>check_add;
-
+                
+                //If the user input 'y' then continue to add new block
+                //else end the loop to return to main menu
                 if(check_add == 'y' || check_add == 'Y') {
                     addBlock = true;
                 }
@@ -104,23 +111,28 @@ int main(){
 
         }
         else if (menu==2){
-
+            
+            //Call Edit Block function
             editBlock(&block_count);
 
+            //Save BlockArr and block_count after edition
             saveFile(blockArr, &block_count);
 
             system("cls");
 
         }
         else if (menu==3) {
-
+            
+            //Call delete block function
             deleteBlock(&block_count);
             block_count -- ;
 
+            //Save BlockArr and block_count after Deletion
             saveFile(blockArr, &block_count);
 
             system("cls");
             
+            //Notify User that block deleted successfully
             cout<<"Block Deleted Succesfully"<<endl;
             printAllBlock(&block_count);
 
@@ -164,6 +176,7 @@ int main(){
 
 // Void function to print out the menu
 void printMenu(){
+    cout<<"!!!Please open this program in full screen to have better view of information!!!"<<endl;
     cout<<"1.Add new block"<<endl;
     cout<<"2.Edit Block"<<endl;
     cout<<"3.Delete Block"<<endl;
@@ -181,7 +194,7 @@ Block createNewBlock(int *block_count) {
     char tempChar ='y';
 
     //Generate a new hash and store in the hashArr for the use to track the sequence of the blocks
-    hashArr[*block_count] = generate_random_hash();
+    newHash = generate_random_hash();
     
     while(checkValid){
         cout<<"Enter new Block\n\n";
@@ -208,22 +221,27 @@ Block createNewBlock(int *block_count) {
 
         system("cls");
 
-    
+
+        //Block number of new block is the increment of 1 of previous block in the chain
         newBlock.block_num = blockArr[*block_count-1].block_num + 1;
-    
-        newBlock.curr_block_hash = hashArr[*block_count];
+
+        //Assign new hash into the current hash in  
+        newBlock.curr_block_hash = newHash;
 
         //Update next block hash on previous block
         blockArr[*block_count-1].next_block_hash = newBlock.curr_block_hash;
     
-        //If the current block id the first block the previous hash will be the current hash
+        
         newBlock.prev_block_hash = blockArr[*block_count-1].curr_block_hash;
+
+        //If the current block is the first block the previous hash will be the current hash
         if(*block_count==0) {
             newBlock.prev_block_hash=newBlock.curr_block_hash;
         }
 
         newBlock.next_block_hash = newBlock.curr_block_hash;
 
+        //Get cuurent timestamp and assign into the "timestamp" of new block
         newBlock.timestamp = getCurrentTime();
 
         newBlock.info = newInformation;
@@ -231,10 +249,13 @@ Block createNewBlock(int *block_count) {
 
         system("cls");
 
+        //Print out new block and Ask user to check the new block inforamtion
         printBlock(newBlock);
         cout<<"\nAre the information enter correct? (ENTER 'y' if correct, ENTER other keys to re-enter information)\n";
         cin>>tempChar;
 
+        //If input is 'y' new block will return to main and be saved
+        //else reinput the information
         if(tempChar == 'y' || tempChar == 'Y') {
             checkValid = false;
         }
@@ -270,28 +291,32 @@ string generate_random_hash() {
     return newHash;
 }
 
+//Function to print out one block
 void printBlock(Block block) {
 
-    cout<<"Block "<<block.block_num<<" \t|";
-    cout<<block.prev_block_hash<<" \t|";
-    cout<<block.curr_block_hash<<" \t|";
-    cout<<block.next_block_hash<<" \t|";
-    cout<<"Timestamp: "<<block.timestamp<<" \t|";
+    cout<<"Block "<<block.block_num<<"\t|";
+    cout<<block.prev_block_hash<<" |";
+    cout<<block.curr_block_hash<<" |";
+    cout<<block.next_block_hash<<" |";
+    cout<<"Timestamp: "<<block.timestamp<<" |";
     cout<< generateInfoString(block.info) <<" \t|"<<endl;
 
 }
 
-//Funtion to print oot all the blocks
+//Funtion to print out all the blocks
 void printAllBlock(int *block_count){
-    cout<<*block_count<<endl;
+    cout<<"Total block: "<<*block_count<<endl;
     string nextHash = blockArr[0].curr_block_hash;
     string currHash = blockArr[0].curr_block_hash;
     int count=0;
-    //The program will print out the block by referring the sequence of the hash in HashArr
-
+    
+    //Nested loop to check the hash of the blocks that need to print out
     for(int i=0; i<*block_count; i++) {
-        
         for(int j=0; j<*block_count; j++) {
+
+            //If the CurrentHash in current block match with the NextHash in previous block
+            //AND the PrevioustHash in current block match with the CurrenttHash in previous block
+            //Then only will print out the block  
             if(blockArr[j].curr_block_hash == nextHash && blockArr[j].prev_block_hash == currHash) {
                 nextHash = blockArr[j].next_block_hash;
                 currHash = blockArr[j].curr_block_hash;
@@ -300,14 +325,15 @@ void printAllBlock(int *block_count){
             }
             
         }
+        //The loop will break when the all the blocks are printed out
         if(count == *block_count) {
                 break;
         }
-        //printBlock(blockArr[i]);
     }
     
 }
 
+//Function to generate info string of the block.info
 string generateInfoString(Information tempInfo) {
     
     string infoString;
@@ -334,21 +360,24 @@ void editBlock(int *block_count){
         cout<<"\nWhich block do you want to edit? (1,2,3...)\n";
         cin>>x;
 
-        //get the position of the block in Array
+        //Get the position of the chosen block in BlockArr
         pos = checkPosition(x, y);
 
-        //Check whether the block choose is exist or not.
+        //Check whether the block choose is exist or not
+        //If pos = -1 meaning the block is not exist
         if(pos == -1) {
             checkValid = true;
             system("cls");
             cout<<"Invalid input Plase choose again !!!"<<endl;
         }
-        //Input new data to the chosen block
+        //start the editing of the block
         else{
             system("cls");
             checkEdit = true;
             tempInfomation = blockArr[pos].info;
             while(checkEdit) {
+
+                //Print our the info of chosen block
                 cout<<"Edit Block "<<x<<"\n\n";
                 cout<<"1. Name: "<<tempInfomation.name<<endl;
                 cout<<"2. Studenty ID: "<<tempInfomation.id<<endl;
@@ -357,46 +386,62 @@ void editBlock(int *block_count){
                 cout<<"5. Grade: "<<tempInfomation.grade<<endl;
                 cout<<"6. Date of completion: "<<tempInfomation.year_completion<<endl;
 
+                //Ask user to choose the field to edit
                 cout<<"\nWhich data do you want to edit?\n";
                 cin>>option;
 
+
                 switch(option) {
+
+                    //Edit name
                     case 1:
                         cout<<"\nPlease Enter New Name: \n";
                         cin.ignore();
                         getline(cin, tempInfomation.name);
                         checkEdit = false;
                         break;
+
+                    //Edit student ID
                     case 2:
-                        cout<<"Please Enter New ID: \n";
+                        cout<<"\nPlease Enter New ID: \n";
                         cin.ignore();
                         getline(cin, tempInfomation.id);
                         checkEdit = false;
                         break;
+                    
+                    //Edit Edu Level
                     case 3:
-                        cout<<"Please Enter new edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
+                        cout<<"\nPlease Enter new edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.edu_level);
                         checkEdit = false;
                         break;
+                    
+                    //Edit Major
                     case 4:
-                        cout<<"Please Enter new Major (e.g. Sciene, BSC Computer Science...): \n";
+                        cout<<"\nPlease Enter new Major (e.g. Sciene, BSC Computer Science...): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.program);
                         checkEdit = false;
                         break;
+                    
+                    //Edit Grade
                     case 5:
-                        cout<<"Please Enter new Grade (e.g. 89% / 3.80 for CGPA): \n";
+                        cout<<"\nPlease Enter new Grade (e.g. 89% / 3.80 for CGPA): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.grade);
                         checkEdit = false;
                         break;
+                    
+                    //Edit date of completion
                     case 6:
-                        cout<<"New Date of completion (2020-08-04): \n";
+                        cout<<"\nNew Date of completion (2020-08-04): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.year_completion);
                         checkEdit = false;
                         break;
+                    
+                    //Notify user that the input is invalid
                     default:
                         system("cls");
                         cout<<"Invalid input Please choose again !!!"<<endl;
@@ -407,22 +452,27 @@ void editBlock(int *block_count){
                     
             }
             
+
             blockArr[pos].info = tempInfomation;
 
+            //Update timestamp of the block after edit
             blockArr[pos].timestamp = getCurrentTime();
 
             system("cls");
-                cout<<"Block edited successfully !!"<<endl;
-                cout<<"Do you want to edit others data? (Enter 'y' to continue edit, Enter others key to retrun main menu)"<<endl;
-                cin>>tempChar;
 
-                if(tempChar == 'y' || tempChar == 'Y') {
-                    checkValid = true;
-                } 
-                else {
-                    checkValid = false;
-                }
-                system("cls");
+            //Notify user the block is edited
+            cout<<"Block edited successfully !!"<<endl;
+            cout<<"Do you want to edit others data? (Enter 'y' to continue edit, Enter others key to retrun main menu)"<<endl;
+            cin>>tempChar;
+
+            //If input is 'y' continue to edit, else return to main menu
+            if(tempChar == 'y' || tempChar == 'Y') {
+                checkValid = true;
+            } 
+            else {
+                checkValid = false;
+            }
+            system("cls");
             
             
         } 
@@ -432,6 +482,7 @@ void editBlock(int *block_count){
 
 }
 
+//Function to get current timestamp
 string getCurrentTime() {
     time_t rawtime;
     struct tm * timeinfo;
@@ -446,25 +497,33 @@ string getCurrentTime() {
     return str;
 }
 
+//Function to delete block
 void deleteBlock(int *block_count) {
     int x , y=*block_count, pos;
     bool checkValid=true;
     char tempChar='y';
 
     while(checkValid) {
-
+        
+        //Ptint out all the block
         printAllBlock(&y);
 
+        //Ask user which block to delete
         cout<<"\nWhich block do you want to delete?"<<endl;
         cin>>x;
 
+        //Get the position of the chosen block in BlockArr
         pos = checkPosition(x,y);
 
+        //Check whether the block choose is exist or not
+        //If pos = -1 meaning the block is not exist
         if( pos == -1) {
             checkValid = true;
             system("cls");
             cout<<"Invalid input Please choose again !!!"<<endl;
         }
+        //If the block to delete is at index 0 in BlockArray, 
+        //The previous hash of the block at index 1 will be its current hash
         else if(pos == 0)
         {
             blockArr[1].prev_block_hash = blockArr[1].curr_block_hash;
@@ -473,6 +532,8 @@ void deleteBlock(int *block_count) {
             }
             checkValid = false;
         }
+        //If the block to delete is the last block in the chain,
+        //the next block hash of the previoius block will be its curr block hash 
         else if (pos == y-1){
             blockArr[pos-1].next_block_hash = blockArr[pos-1].curr_block_hash;
             checkValid = false;
@@ -489,11 +550,14 @@ void deleteBlock(int *block_count) {
     }
 }
 
+//Function to check the position of the block in the Block Array
 int checkPosition(int x, int y) {
     int pos=0, check=0;
     char tempChar;
 
     for(int i=0; i<y; i++) {
+        //If the block number input match with block_num of the block,
+        //then i is the positon of the block in the array
         if(blockArr[i].block_num == x) {
             check = 1;
             pos = i;
@@ -501,22 +565,31 @@ int checkPosition(int x, int y) {
         }
     }
 
-
+    //If check = 1, return pos
     if (check == 1) {
         return pos;
     }
+    //else return -1 to indicate that the input block number is invalid
     else {
         return -1;
     }
 }
 
+//Function to save BlockArr data and block_count into txt file
 void saveFile(Block block[], int *block_count) {
     Information tempInfo;
+
+    //Declare file type and file name 
     ofstream myfile ("20108211_TanFanHwa_CW2.txt");
     
+    //If file open, then start saving data
     if(myfile.is_open()) {
-        myfile<<*block_count<<endl;
 
+        //Save number of block
+        //The first line of the txt file will be the total number of block 
+        myfile<<*block_count<<endl;
+        
+        //Save all blocks' data
         for(int i=0; i<*block_count; i++) {
             myfile<<blockArr[i].block_num<<"|";
             myfile<<blockArr[i].prev_block_hash<<"|";
@@ -532,26 +605,35 @@ void saveFile(Block block[], int *block_count) {
             myfile<<tempInfo.year_completion<<"\n";
         }
     }
+    //else notify user the file cannnot open
     else {
         cout<<"Unable to open file\n";
     }
 
+    //close file
     myfile.close();
 
 }
 
+//Funstion to load data from txt file into BlockArr and block_count
 void loadData(int *x) {
     
     int tempBlockCount, tempBlockNum;
+
+    //Declaring file
     ifstream myfile;
     myfile.open("20108211_TanFanHwa_CW2.txt");
     
     if(myfile) {
+
+        //The first line of the txt file is the total number of block
+        //so this part is to load total number of block into block_count
         string tempString;
         getline(myfile, tempString, '\n');
         *x = stoi(tempString);
         int i=0;
 
+        //While is not end of file continue to load data into blockArr
         while(!myfile.eof()) {
             Block tempBlock;
             Information tempInfo;
@@ -581,7 +663,5 @@ void loadData(int *x) {
             i++;
         }
     }
-    else {
-        cout<<"Unable to open file\n";
-    }
+
 }

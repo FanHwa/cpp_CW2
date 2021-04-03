@@ -366,31 +366,31 @@ void editBlock(int *block_count){
                         checkEdit = false;
                         break;
                     case 2:
-                        cout<<"Please Enter New ID: \n";
+                        cout<<"\nPlease Enter New ID: \n";
                         cin.ignore();
                         getline(cin, tempInfomation.id);
                         checkEdit = false;
                         break;
                     case 3:
-                        cout<<"Please Enter new edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
+                        cout<<"\nPlease Enter new edu level (eg. Grade 10 (Form 4), Grade 12(A-Level), UG Semester 1...): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.edu_level);
                         checkEdit = false;
                         break;
                     case 4:
-                        cout<<"Please Enter new Major (e.g. Sciene, BSC Computer Science...): \n";
+                        cout<<"\nPlease Enter new Major (e.g. Sciene, BSC Computer Science...): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.program);
                         checkEdit = false;
                         break;
                     case 5:
-                        cout<<"Please Enter new Grade (e.g. 89% / 3.80 for CGPA): \n";
+                        cout<<"\nPlease Enter new Grade (e.g. 89% / 3.80 for CGPA): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.grade);
                         checkEdit = false;
                         break;
                     case 6:
-                        cout<<"New Date of completion (2020-08-04): \n";
+                        cout<<"\nNew Date of completion (2020-08-04): \n";
                         cin.ignore();
                         getline(cin, tempInfomation.year_completion);
                         checkEdit = false;
